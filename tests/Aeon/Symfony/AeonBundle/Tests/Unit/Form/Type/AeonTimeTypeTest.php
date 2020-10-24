@@ -19,9 +19,9 @@ final class AeonTimeTypeTest extends TypeTestCase
             'input' => 'string',
         ]);
 
-        $form->submit('13:00:00');
+        $form->submit('13:00');
 
-        $dateTime = Time::fromString('13:00:00');
+        $dateTime = Time::fromString('13:00');
 
         $this->assertEquals($dateTime, $form->getData());
     }
@@ -33,9 +33,9 @@ final class AeonTimeTypeTest extends TypeTestCase
             'input' => 'datetime',
         ]);
 
-        $form->submit('13:00:00');
+        $form->submit('13:00');
 
-        $dateTime = Time::fromString('13:00:00');
+        $dateTime = Time::fromString('13:00');
 
         $this->assertEquals($dateTime, $form->getData());
     }
@@ -47,9 +47,9 @@ final class AeonTimeTypeTest extends TypeTestCase
             'input' => 'datetime_immutable',
         ]);
 
-        $form->submit('13:00:00');
+        $form->submit('13:00');
 
-        $dateTime = Time::fromString('13:00:00');
+        $dateTime = Time::fromString('13:00');
 
         $this->assertEquals($dateTime, $form->getData());
     }
@@ -61,9 +61,9 @@ final class AeonTimeTypeTest extends TypeTestCase
             'input' => 'array',
         ]);
 
-        $form->submit('13:00:00');
+        $form->submit('13:00');
 
-        $dateTime = Time::fromString('13:00:00');
+        $dateTime = Time::fromString('13:00');
 
         $this->assertEquals($dateTime, $form->getData());
     }
@@ -75,9 +75,9 @@ final class AeonTimeTypeTest extends TypeTestCase
             'input' => 'timestamp',
         ]);
 
-        $form->submit('13:00:00');
+        $form->submit('13:00');
 
-        $dateTime = Time::fromString('13:00:00');
+        $dateTime = Time::fromString('13:00');
 
         $this->assertEquals($dateTime, $form->getData());
     }
@@ -88,11 +88,11 @@ final class AeonTimeTypeTest extends TypeTestCase
             'widget' => 'single_text',
         ]);
 
-        $form->setData(Time::fromString('13:00:00'));
+        $form->setData(Time::fromString('13:00'));
 
-        $form->submit('18:00:00');
+        $form->submit('18:00');
 
-        $dateTime = Time::fromString('18:00:00');
+        $dateTime = Time::fromString('18:00');
 
         $this->assertEquals($dateTime, $form->getData());
     }
