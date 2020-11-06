@@ -63,6 +63,6 @@ final class TestAppKernel extends BaseKernel
 
     protected function configureRoutes(RouteCollectionBuilder $routes) : void
     {
-        $routes->add('not_holiday', '/not-holiday')->controller([$this, 'notHoliday']);
+        $routes->add('/not-holiday', 'kernel::notHoliday');
     }
 }
