@@ -11,7 +11,7 @@ use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 use Symfony\Component\Validator\Exception\UnexpectedValueException;
 
-final class NotHolidayValidator extends ConstraintValidator
+final class HolidayValidator extends ConstraintValidator
 {
     private HolidaysFactory $factory;
 
@@ -25,8 +25,8 @@ final class NotHolidayValidator extends ConstraintValidator
      */
     public function validate($value, Constraint $constraint) : void
     {
-        if (!$constraint instanceof NotHoliday) {
-            throw new UnexpectedTypeException($constraint, NotHoliday::class);
+        if (!$constraint instanceof Holiday) {
+            throw new UnexpectedTypeException($constraint, Holiday::class);
         }
 
         if (null === $value || '' === $value) {
@@ -50,20 +50,20 @@ final class NotHolidayValidator extends ConstraintValidator
 
             $holidays = $this->factory->create($constraint->countryCode);
 
-            if (!$holidays->isHoliday($day)) {
+            if ($holidays->isHoliday($day)) {
                 return;
             }
 
             $this->context->buildViolation($constraint->message)
                 ->setParameter('{{ day }}', $this->formatValue($day->toString()))
-                ->setCode(NotHoliday::HOLIDAY_DAY)
+                ->setCode(Holiday::NOT_HOLIDAY_DAY)
                 ->addViolation();
 
             return;
         } catch (\Exception $exception) {
             $this->context->buildViolation($constraint->message)
                 ->setParameter('{{ day }}', $this->formatValue($value))
-                ->setCode(NotHoliday::HOLIDAY_DAY)
+                ->setCode(Holiday::NOT_HOLIDAY_DAY)
                 ->addViolation();
 
             return;

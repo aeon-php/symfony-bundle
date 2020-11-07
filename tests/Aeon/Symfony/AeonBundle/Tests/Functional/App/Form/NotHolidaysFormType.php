@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Aeon\Symfony\AeonBundle\Tests\Functional\App\Form;
 
 use Aeon\Symfony\AeonBundle\Form\Type\AeonDayType;
+use Aeon\Symfony\AeonBundle\Validator\Constraints\Holiday;
 use Aeon\Symfony\AeonBundle\Validator\Constraints\NotHoliday;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -16,10 +17,16 @@ final class NotHolidaysFormType extends AbstractType
     {
         $builder->setMethod('POST');
 
-        $builder->add('day', AeonDayType::class, [
+        $builder->add('not_holiday', AeonDayType::class, [
             'widget' => 'single_text',
             'input' => 'string',
             'constraints' => [new NotHoliday(['countryCode' => 'US'])],
+        ]);
+
+        $builder->add('holiday', AeonDayType::class, [
+            'widget' => 'single_text',
+            'input' => 'string',
+            'constraints' => [new Holiday(['countryCode' => 'US'])],
         ]);
     }
 
@@ -32,6 +39,6 @@ final class NotHolidaysFormType extends AbstractType
 
     public function getBlockPrefix()
     {
-        return 'not_holidays';
+        return 'holidays';
     }
 }

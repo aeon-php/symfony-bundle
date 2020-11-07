@@ -13,7 +13,7 @@ final class FormTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $client->request('POST', '/not-holiday', ['not_holidays' => ['day' => '2020-01-01']]);
+        $client->request('POST', '/holiday', ['holidays' => ['not_holiday' => '2020-01-01', 'holiday' => '2020-01-01']]);
 
         $this->assertSame(422, $client->getResponse()->getStatusCode(), $client->getResponse()->getContent());
         $this->assertStringContainsString('ERROR: Day "2020-01-01" is a holiday.', $client->getResponse()->getContent());
@@ -23,10 +23,9 @@ final class FormTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $client->request('POST', '/not-holiday', ['not_holidays' => ['day' => '2020-01-02']]);
+        $client->request('POST', '/holiday', ['holidays' => ['not_holiday' => '2020-01-02', 'holiday' => '2020-01-01']]);
 
         $this->assertSame(200, $client->getResponse()->getStatusCode(), $client->getResponse()->getContent());
-        $this->assertSame('not-holiday', $client->getResponse()->getContent());
     }
 
     protected static function getKernelClass()

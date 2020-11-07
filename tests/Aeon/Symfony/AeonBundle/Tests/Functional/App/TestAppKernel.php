@@ -37,14 +37,14 @@ final class TestAppKernel extends BaseKernel
         return \sys_get_temp_dir() . '/AeonBundle/logs';
     }
 
-    public function notHoliday(Request $request) : Response
+    public function holiday(Request $request) : Response
     {
         $form = $this->getContainer()->get('form.factory')->create(NotHolidaysFormType::class);
 
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            return new Response('not-holiday');
+            return new Response();
         }
 
         return new Response((string) $form->getErrors(true, false), 422);
@@ -63,6 +63,6 @@ final class TestAppKernel extends BaseKernel
 
     protected function configureRoutes(RouteCollectionBuilder $routes) : void
     {
-        $routes->add('/not-holiday', 'kernel::notHoliday');
+        $routes->add('/holiday', 'kernel::holiday');
     }
 }

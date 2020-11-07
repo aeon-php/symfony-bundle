@@ -33,7 +33,7 @@ final class NotHolidayValidatorTest extends ConstraintValidatorTestCase
 
         $this->buildViolation('Day {{ day }} is a holiday.')
             ->setParameter('{{ day }}', '"not_valid_date"')
-            ->setCode(NotHoliday::NOT_HOLIDAY_DAY)
+            ->setCode(NotHoliday::HOLIDAY_DAY)
             ->assertRaised();
     }
 
@@ -43,7 +43,7 @@ final class NotHolidayValidatorTest extends ConstraintValidatorTestCase
 
         $this->buildViolation('Day {{ day }} is a holiday.')
             ->setParameter('{{ day }}', '"2020-01-01"')
-            ->setCode(NotHoliday::NOT_HOLIDAY_DAY)
+            ->setCode(NotHoliday::HOLIDAY_DAY)
             ->assertRaised();
     }
 
