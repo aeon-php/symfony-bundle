@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace Aeon\Symfony\AeonBundle\Tests\Functional\App;
 
+use Aeon\Calendar\Gregorian\Calendar;
+use Aeon\RateLimiter\Storage\PSRCacheStorage;
 use Aeon\Symfony\AeonBundle\AeonBundle;
 use Aeon\Symfony\AeonBundle\Tests\Functional\App\Form\NotHolidaysFormType;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
+use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Kernel as BaseKernel;
@@ -52,12 +56,27 @@ final class TestAppKernel extends BaseKernel
 
     protected function configureContainer(ContainerBuilder $c, LoaderInterface $loader) : void
     {
+        $c->register('cache.psr.array.adapter', ArrayAdapter::class);
+        $c->register('cache.psr.array', PSRCacheStorage::class)
+            ->setArguments([new Reference('cache.psr.array.adapter'), new Reference(Calendar::class)]);
+
         $c->loadFromExtension('framework', [
             'secret' => 'S0ME_SECRET',
             'test' => $this->environment === 'test',
         ]);
         $c->loadFromExtension('aeon', [
-
+            'rate_limiter' => [
+                [
+                    'id' => 'leaky_bucket',
+                    'algorithm' => 'leaky_bucket',
+                    'configuration' => [
+                        'bucket_size' => 5,
+                        'leak_size' => 1,
+                        'leak_time' => '1 second',
+                        'storage_service_id' => 'cache.psr.array',
+                    ],
+                ],
+            ],
         ]);
     }
 
