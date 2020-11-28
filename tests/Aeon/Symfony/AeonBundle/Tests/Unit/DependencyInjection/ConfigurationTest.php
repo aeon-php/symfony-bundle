@@ -77,6 +77,59 @@ final class ConfigurationTest extends TestCase
         ], $config['rate_limiter']);
     }
 
+    public function test_rate_limiter_with_request_throttling_configuration() : void
+    {
+        $config = $this->process([
+            'aeon' => [
+                'rate_limiter' => [
+                    [
+                        'id' => 'test_limiter',
+                        'algorithm' => 'leaky_bucket',
+                        'configuration' => [
+                            'bucket_size' => 5,
+                            'leak_size' => 2,
+                            'leak_time' => '1 minute',
+                            'storage_service_id' => 'symfony.storage.array',
+                        ],
+                    ],
+                ],
+                'request_throttling' => [
+                    'routes' => [
+                        [
+                            'route_name' => 'test_route',
+                            'rate_limiter_id' => 'test_limiter',
+                            'methods' => ['POST', 'GET'],
+                            'request_identification_strategy' => [
+                                'type' => 'session_id',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $this->assertEquals([
+            'register_rate_limit_exception_listener' => true,
+            'response_code' => 429,
+            'response_message' => 'Rate limit exceeded',
+            'headers' => [
+                'limit' => 'X-RateLimit-Limit',
+                'remaining' => 'X-RateLimit-Remaining',
+                'reset' => 'X-RateLimit-Reset',
+            ],
+            'routes' => [
+                [
+                    'route_name' => 'test_route',
+                    'rate_limiter_id' => 'test_limiter',
+                    'methods' => ['POST', 'GET'],
+                    'request_identification_strategy' => [
+                        'type' => 'session_id',
+                    ],
+                ],
+            ],
+        ], $config['request_throttling']);
+    }
+
     public function test_rate_limiter_with_invalid_leaky_bucket_configuration() : void
     {
         $this->expectException(InvalidConfigurationException::class);
@@ -115,8 +168,6 @@ final class ConfigurationTest extends TestCase
 
     protected function process($configs)
     {
-        $processor = new Processor();
-
-        return $processor->processConfiguration(new Configuration(), $configs);
+        return (new Processor())->processConfiguration(new Configuration(), $configs);
     }
 }

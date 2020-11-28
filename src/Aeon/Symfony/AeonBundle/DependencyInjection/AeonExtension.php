@@ -10,8 +10,16 @@ use Aeon\Calendar\TimeUnit;
 use Aeon\RateLimiter\Algorithm\LeakyBucketAlgorithm;
 use Aeon\RateLimiter\Algorithm\SlidingWindowAlgorithm;
 use Aeon\RateLimiter\RateLimiter;
+use Aeon\Symfony\AeonBundle\EventListener\RateLimitExceptionListener;
+use Aeon\Symfony\AeonBundle\RateLimiter\RateLimitHttpProtocol;
+use Aeon\Symfony\AeonBundle\RateLimiter\RequestIdentificationStrategy\HeaderRequestIdentificationStrategy;
+use Aeon\Symfony\AeonBundle\RateLimiter\RequestIdentificationStrategy\SessionIdRequestIdentificationStrategy;
+use Aeon\Symfony\AeonBundle\RateLimiter\RequestIdentificationStrategy\UsernameRequestIdentificationStrategy;
+use Aeon\Symfony\AeonBundle\RateLimiter\RequestThrottling;
+use Aeon\Symfony\AeonBundle\RateLimiter\RequestThrottling\RouteThrottle;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
@@ -50,7 +58,13 @@ final class AeonExtension extends Extension
             }
         }
 
-        foreach ($config['rate_limiter'] as $rateLimiterConfig) {
+        $this->registerRateLimiters($container, $config['rate_limiter']);
+        $this->registerRequestThrottling($container, $config['request_throttling']);
+    }
+
+    private function registerRateLimiters(ContainerBuilder $container, array $config) : void
+    {
+        foreach ($config as $rateLimiterConfig) {
             switch ($rateLimiterConfig['algorithm']) {
                 case 'leaky_bucket':
                     $leakTimeDefinition = $container
@@ -107,5 +121,92 @@ final class AeonExtension extends Extension
                     break;
             }
         }
+    }
+
+    private function registerRequestThrottling(ContainerBuilder $container, $config) : void
+    {
+        if ($config['register_rate_limit_exception_listener'] === true) {
+            $container->register('exception.listener.rate_limit', RateLimitExceptionListener::class)
+                ->setArguments([new Reference(RateLimitHttpProtocol::class)])
+                ->addTag('kernel.event_listener', ['event' => 'kernel.exception']);
+        }
+
+        $container->register('rate_limit_http_protocol', RateLimitHttpProtocol::class)
+            ->setArguments([
+                $config['response_code'],
+                $config['response_message'],
+                $config['headers']['limit'],
+                $config['headers']['remaining'],
+                $config['headers']['reset'],
+            ]);
+        $container->setAlias(RateLimitHttpProtocol::class, 'rate_limit_http_protocol');
+
+        if ($container->hasDefinition('security.token_storage')) {
+            $usernameIdentificationStrategyDefinition = $container->register(
+                'rate_limiter.request.request_identification_strategy.username',
+                UsernameRequestIdentificationStrategy::class
+            )->setArguments([new Reference('security.token_storage')]);
+        } else {
+            $usernameIdentificationStrategyDefinition = null;
+        }
+
+        $sessionIdRequestIdentificationStrategy = $container->register(
+            'rate_limiter.request.request_identification_strategy.session_id',
+            SessionIdRequestIdentificationStrategy::class
+        );
+
+        $throttles = [];
+
+        foreach ($config['routes'] as $requestThrottlingConfig) {
+            $routeId = \sha1(\json_encode($requestThrottlingConfig));
+
+            switch ($requestThrottlingConfig['request_identification_strategy']['type']) {
+                case 'session_id':
+                    $requestIdentificationStrategyDefinition = $sessionIdRequestIdentificationStrategy;
+
+                    break;
+                case 'username':
+                    if ($usernameIdentificationStrategyDefinition === null) {
+                        throw new ServiceNotFoundException('security.token_storage');
+                    }
+
+                    $requestIdentificationStrategyDefinition = $usernameIdentificationStrategyDefinition;
+
+                    break;
+                case 'header':
+                    $requestIdentificationStrategyDefinition = $container->register(
+                        'rate_limiter.request.request_identification_strategy.header.' . $routeId,
+                        HeaderRequestIdentificationStrategy::class
+                    )->setArguments([$requestThrottlingConfig['request_identification_strategy']['configuration']['header']]);
+
+                    break;
+
+                default:
+                    if (!$container->hasDefinition($requestThrottlingConfig['request_identification_strategy']['type'])) {
+                        throw new ServiceNotFoundException($requestThrottlingConfig['request_identification_strategy']['type']);
+                    }
+
+                    $requestIdentificationStrategyDefinition = new Reference($requestThrottlingConfig['request_identification_strategy']['type']);
+
+                    break;
+            }
+
+            $routeThrottle = $container->register(
+                'request_throttling.route.' . $routeId,
+                RouteThrottle::class
+            )->setArguments([
+                $requestThrottlingConfig['route_name'],
+                new Reference('rate_limiter.' . $requestThrottlingConfig['rate_limiter_id']),
+                $requestThrottlingConfig['methods'],
+                $requestIdentificationStrategyDefinition,
+            ]);
+
+            $throttles[] = $routeThrottle;
+        }
+
+        $container->register('request_throttling', RequestThrottling::class)
+            ->setArguments([
+                $throttles,
+            ]);
     }
 }

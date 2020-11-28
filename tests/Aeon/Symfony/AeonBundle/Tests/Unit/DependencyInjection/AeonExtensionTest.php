@@ -10,12 +10,15 @@ use Aeon\RateLimiter\RateLimiter;
 use Aeon\RateLimiter\Storage\PSRCacheStorage;
 use Aeon\Symfony\AeonBundle\DependencyInjection\AeonExtension;
 use Aeon\Symfony\AeonBundle\RateLimiter\RateLimiters;
+use Aeon\Symfony\AeonBundle\RateLimiter\RequestThrottling\RouteThrottle;
 use Aeon\Symfony\AeonBundle\Twig\RateLimiterExtension;
 use Aeon\Twig\CalendarExtension;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage;
 
 final class AeonExtensionTest extends TestCase
 {
@@ -117,5 +120,176 @@ final class AeonExtensionTest extends TestCase
         );
 
         $this->assertInstanceOf(RateLimiter::class, $this->container->get('rate_limiters')->get('test'));
+    }
+
+    public function test_request_throttling_session_id_identification_strategy() : void
+    {
+        $this->container->set('psr.cache.array', new PSRCacheStorage(new ArrayAdapter(), GregorianCalendar::UTC()));
+
+        $extension = new AeonExtension();
+        $extension->load(
+            [
+                'aeon' => [
+                    'rate_limiter' => [
+                        [
+                            'id' => 'test_limiter',
+                            'algorithm' => 'sliding_window',
+                            'configuration' => [
+                                'limit' => 5,
+                                'time_window' => '1 minute',
+                                'storage_service_id' => 'psr.cache.array',
+                            ],
+                        ],
+                    ],
+                    'request_throttling' => [
+                        'routes' => [
+                            $routeConfig = [
+                                'route_name' => 'test_route',
+                                'rate_limiter_id' => 'test_limiter',
+                                'methods' => ['POST', 'GET'],
+                                'request_identification_strategy' => [
+                                    'type' => 'session_id',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            $this->container
+        );
+
+        $routeId = \sha1(\json_encode($routeConfig));
+
+        $this->assertInstanceOf(RouteThrottle::class, $this->container->get('request_throttling.route.' . $routeId));
+    }
+
+    public function test_request_throttling_hedaer_identification_strategy() : void
+    {
+        $this->container->set('psr.cache.array', new PSRCacheStorage(new ArrayAdapter(), GregorianCalendar::UTC()));
+
+        $extension = new AeonExtension();
+        $extension->load(
+            [
+                'aeon' => [
+                    'rate_limiter' => [
+                        [
+                            'id' => 'test_limiter',
+                            'algorithm' => 'sliding_window',
+                            'configuration' => [
+                                'limit' => 5,
+                                'time_window' => '1 minute',
+                                'storage_service_id' => 'psr.cache.array',
+                            ],
+                        ],
+                    ],
+                    'request_throttling' => [
+                        'routes' => [
+                            $routeConfig = [
+                                'route_name' => 'test_route',
+                                'rate_limiter_id' => 'test_limiter',
+                                'methods' => ['POST', 'GET'],
+                                'request_identification_strategy' => [
+                                    'type' => 'header',
+                                    'configuration' => [
+                                        'header' => 'authentication',
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            $this->container
+        );
+
+        $routeId = \sha1(\json_encode($routeConfig));
+
+        $this->assertInstanceOf(RouteThrottle::class, $this->container->get('request_throttling.route.' . $routeId));
+    }
+
+    public function test_request_throttling_hedaer_identification_strategy_without_header_configuration() : void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage('Invalid configuration for path "aeon.request_throttling.routes.0.request_identification_strategy": header request identification strategy requires "headers" option to be configured in "configuration" section');
+
+        $this->container->set('psr.cache.array', new PSRCacheStorage(new ArrayAdapter(), GregorianCalendar::UTC()));
+
+        $extension = new AeonExtension();
+        $extension->load(
+            [
+                'aeon' => [
+                    'rate_limiter' => [
+                        [
+                            'id' => 'test_limiter',
+                            'algorithm' => 'sliding_window',
+                            'configuration' => [
+                                'limit' => 5,
+                                'time_window' => '1 minute',
+                                'storage_service_id' => 'psr.cache.array',
+                            ],
+                        ],
+                    ],
+                    'request_throttling' => [
+                        'routes' => [
+                            $routeConfig = [
+                                'route_name' => 'test_route',
+                                'rate_limiter_id' => 'test_limiter',
+                                'methods' => ['POST', 'GET'],
+                                'request_identification_strategy' => [
+                                    'type' => 'header',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            $this->container
+        );
+
+        $routeId = \sha1(\json_encode($routeConfig));
+
+        $this->assertInstanceOf(RouteThrottle::class, $this->container->get('request_throttling.route.' . $routeId));
+    }
+
+    public function test_request_throttling_username_identification_strategy() : void
+    {
+        $this->container->set('psr.cache.array', new PSRCacheStorage(new ArrayAdapter(), GregorianCalendar::UTC()));
+        $this->container->register('security.token_storage', TokenStorage::class);
+
+        $extension = new AeonExtension();
+        $extension->load(
+            [
+                'aeon' => [
+                    'rate_limiter' => [
+                        [
+                            'id' => 'test_limiter',
+                            'algorithm' => 'sliding_window',
+                            'configuration' => [
+                                'limit' => 5,
+                                'time_window' => '1 minute',
+                                'storage_service_id' => 'psr.cache.array',
+                            ],
+                        ],
+                    ],
+                    'request_throttling' => [
+                        'routes' => [
+                            $routeConfig = [
+                                'route_name' => 'test_route',
+                                'rate_limiter_id' => 'test_limiter',
+                                'methods' => ['POST', 'GET'],
+                                'request_identification_strategy' => [
+                                    'type' => 'username',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            $this->container
+        );
+
+        $routeId = \sha1(\json_encode($routeConfig));
+
+        $this->assertInstanceOf(RouteThrottle::class, $this->container->get('request_throttling.route.' . $routeId));
     }
 }

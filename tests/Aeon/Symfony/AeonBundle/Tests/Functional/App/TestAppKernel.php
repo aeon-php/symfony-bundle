@@ -7,6 +7,7 @@ namespace Aeon\Symfony\AeonBundle\Tests\Functional\App;
 use Aeon\Calendar\Gregorian\Calendar;
 use Aeon\RateLimiter\Storage\PSRCacheStorage;
 use Aeon\Symfony\AeonBundle\AeonBundle;
+use Aeon\Symfony\AeonBundle\RateLimiter\RateLimiters;
 use Aeon\Symfony\AeonBundle\Tests\Functional\App\Form\NotHolidaysFormType;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
@@ -54,6 +55,23 @@ final class TestAppKernel extends BaseKernel
         return new Response((string) $form->getErrors(true, false), 422);
     }
 
+    public function throttle(Request $request) : Response
+    {
+        return new Response('', 200);
+    }
+
+    public function manualThrottle(Request $request) : Response
+    {
+        $this->container->get(RateLimiters::class)->get('throttled_feature')->hit('test');
+        $this->container->get(RateLimiters::class)->get('throttled_feature')->hit('test');
+        $this->container->get(RateLimiters::class)->get('throttled_feature')->hit('test');
+        $this->container->get(RateLimiters::class)->get('throttled_feature')->hit('test');
+        $this->container->get(RateLimiters::class)->get('throttled_feature')->hit('test');
+        $this->container->get(RateLimiters::class)->get('throttled_feature')->hit('test');
+
+        return new Response('', 200);
+    }
+
     protected function configureContainer(ContainerBuilder $c, LoaderInterface $loader) : void
     {
         $c->register('cache.psr.array.adapter', ArrayAdapter::class);
@@ -63,17 +81,32 @@ final class TestAppKernel extends BaseKernel
         $c->loadFromExtension('framework', [
             'secret' => 'S0ME_SECRET',
             'test' => $this->environment === 'test',
+            'session' => [
+                'enabled' => true,
+                'storage_id' => 'session.storage.filesystem',
+            ],
         ]);
         $c->loadFromExtension('aeon', [
             'rate_limiter' => [
                 [
-                    'id' => 'leaky_bucket',
-                    'algorithm' => 'leaky_bucket',
+                    'id' => 'throttled_feature',
+                    'algorithm' => 'sliding_window',
                     'configuration' => [
-                        'bucket_size' => 5,
-                        'leak_size' => 1,
-                        'leak_time' => '1 second',
+                        'limit' => 5,
+                        'time_window' => '1 second',
                         'storage_service_id' => 'cache.psr.array',
+                    ],
+                ],
+            ],
+            'request_throttling' => [
+                'routes' => [
+                    [
+                        'route_name' => 'throttle',
+                        'rate_limiter_id' => 'throttled_feature',
+                        'methods' => ['POST'],
+                        'request_identification_strategy' => [
+                            'type' => 'session_id',
+                        ],
                     ],
                 ],
             ],
@@ -82,6 +115,8 @@ final class TestAppKernel extends BaseKernel
 
     protected function configureRoutes(RouteCollectionBuilder $routes) : void
     {
-        $routes->add('/holiday', 'kernel::holiday');
+        $routes->add('/holiday', 'kernel::holiday', 'holiday');
+        $routes->add('/throttle', 'kernel::throttle', 'throttle');
+        $routes->add('/manual-throttle', 'kernel::manualThrottle', 'manual-throttle');
     }
 }
