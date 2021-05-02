@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "114dbefcca50a023246409f82f691ee6",
+    "content-hash": "b68ac7de7ab12410d9801c7cc99f1c8c",
     "packages": [
         {
             "name": "aeon-php/calendar",
@@ -121,29 +121,24 @@
         },
         {
             "name": "aeon-php/calendar-twig",
-            "version": "0.8.0",
+            "version": "0.9.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aeon-php/calendar-twig.git",
-                "reference": "722bdfa3ee914b951f3ba7aa4aa254925aedcb05"
+                "reference": "314ec3d90fd7a6c9f59e5016d1cd03c845bd6915"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aeon-php/calendar-twig/zipball/722bdfa3ee914b951f3ba7aa4aa254925aedcb05",
-                "reference": "722bdfa3ee914b951f3ba7aa4aa254925aedcb05",
+                "url": "https://api.github.com/repos/aeon-php/calendar-twig/zipball/314ec3d90fd7a6c9f59e5016d1cd03c845bd6915",
+                "reference": "314ec3d90fd7a6c9f59e5016d1cd03c845bd6915",
                 "shasum": ""
             },
             "require": {
-                "aeon-php/calendar": ">=0.14.0",
+                "aeon-php/calendar": ">=0.18.0",
                 "php": ">=7.4.2",
                 "twig/twig": "^1.43|^2.10|^3"
             },
             "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-latest": "1.0-dev"
-                }
-            },
             "autoload": {
                 "psr-4": {
                     "Aeon\\": [
@@ -164,7 +159,7 @@
             ],
             "support": {
                 "issues": "https://github.com/aeon-php/calendar-twig/issues",
-                "source": "https://github.com/aeon-php/calendar-twig/tree/0.8.0"
+                "source": "https://github.com/aeon-php/calendar-twig/tree/0.9.0"
             },
             "funding": [
                 {
@@ -172,7 +167,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2021-01-21T21:22:19+00:00"
+            "time": "2021-05-02T09:23:12+00:00"
         },
         {
             "name": "aeon-php/rate-limiter",
