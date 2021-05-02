@@ -13,7 +13,7 @@
     "prefer-stable": true,
     "minimum-stability": "dev",
     "require": {
-        "php": ">=7.4.2",
+        "php": "^7.4.2|^8.0",
         "ext-json": "*",
         "aeon-php/calendar": ">=0.18",
         "aeon-php/calendar-holidays": ">=0.7.0",
