@@ -8,8 +8,10 @@ use Aeon\Calendar\Gregorian\Calendar;
 use Aeon\Calendar\Gregorian\GregorianCalendar;
 use Aeon\Calendar\Gregorian\GregorianCalendarStub;
 use Aeon\Calendar\Gregorian\TimeZone;
-use Aeon\Symfony\AeonBundle\Tests\Functional\App\TestAppKernel;
+use Aeon\Symfony\AeonBundle\Tests\Functional\App\TestAppRouteCollectionKernel;
+use Aeon\Symfony\AeonBundle\Tests\Functional\App\TestAppSymfonyLatestKernel;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\HttpKernel\Kernel;
 
 final class AeonBundleTest extends KernelTestCase
 {
@@ -37,6 +39,10 @@ final class AeonBundleTest extends KernelTestCase
 
     protected static function getKernelClass()
     {
-        return TestAppKernel::class;
+        if (version_compare(Kernel::VERSION, '5.1.0') == -1) {
+            return TestAppRouteCollectionKernel::class;
+        }
+
+        return TestAppSymfonyLatestKernel::class;
     }
 }

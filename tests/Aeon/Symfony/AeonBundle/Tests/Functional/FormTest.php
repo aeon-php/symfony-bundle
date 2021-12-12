@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Aeon\Symfony\AeonBundle\Tests\Functional;
 
-use Aeon\Symfony\AeonBundle\Tests\Functional\App\TestAppKernel;
+use Aeon\Symfony\AeonBundle\Tests\Functional\App\TestAppRouteCollectionKernel;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 final class FormTest extends WebTestCase
@@ -30,6 +30,6 @@ final class FormTest extends WebTestCase
 
     protected static function getKernelClass()
     {
-        return TestAppKernel::class;
+        return TestAppRouteCollectionKernel::class;
     }
 }
