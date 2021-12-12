@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace Aeon\Symfony\AeonBundle\Tests\Functional;
 
-use Aeon\Symfony\AeonBundle\Tests\Functional\App\TestAppRouteCollectionKernel;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-
-final class ThrottleRequestTest extends WebTestCase
+final class ThrottleRequestTest extends TestSuite
 {
     public function test_throttled_endpoint() : void
     {
@@ -89,10 +86,5 @@ final class ThrottleRequestTest extends WebTestCase
         $this->assertSame(5, (int) $client->getResponse()->headers->get('x-ratelimit-limit'));
         $this->assertSame(0, (int) $client->getResponse()->headers->get('x-ratelimit-remaining'));
         $this->assertEqualsWithDelta(10, (int) $client->getResponse()->headers->get('x-ratelimit-reset'), 2);
-    }
-
-    protected static function getKernelClass()
-    {
-        return TestAppRouteCollectionKernel::class;
     }
 }
