@@ -105,7 +105,10 @@ final class TestAppKernel extends BaseKernel
                         'rate_limiter_id' => 'throttled_feature',
                         'methods' => ['POST'],
                         'request_identification_strategy' => [
-                            'type' => 'session_id',
+                            'type' => 'header',
+                            'configuration' => [
+                                'header' => 'throttling-id',
+                            ],
                         ],
                     ],
                 ],

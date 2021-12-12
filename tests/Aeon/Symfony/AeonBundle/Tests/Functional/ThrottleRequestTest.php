@@ -14,7 +14,7 @@ final class ThrottleRequestTest extends WebTestCase
         $client = self::createClient();
         $client->disableReboot();
 
-        $client->request('POST', '/throttle');
+        $client->request('POST', '/throttle', [], [], ['HTTP_throttling-id' => 1]);
 
         $this->assertSame(200, $client->getResponse()->getStatusCode(), $client->getResponse()->getContent());
 
@@ -22,7 +22,7 @@ final class ThrottleRequestTest extends WebTestCase
         $this->assertSame(4, (int) $client->getResponse()->headers->get('x-ratelimit-remaining'));
         $this->assertEqualsWithDelta(10, (int) $client->getResponse()->headers->get('x-ratelimit-reset'), 2);
 
-        $client->request('POST', '/throttle');
+        $client->request('POST', '/throttle', [], [], ['HTTP_throttling-id' => 1]);
 
         $this->assertSame(200, $client->getResponse()->getStatusCode(), $client->getResponse()->getContent());
 
@@ -30,7 +30,7 @@ final class ThrottleRequestTest extends WebTestCase
         $this->assertSame(3, (int) $client->getResponse()->headers->get('x-ratelimit-remaining'));
         $this->assertEqualsWithDelta(10, (int) $client->getResponse()->headers->get('x-ratelimit-reset'), 2);
 
-        $client->request('POST', '/throttle');
+        $client->request('POST', '/throttle', [], [], ['HTTP_throttling-id' => 1]);
 
         $this->assertSame(200, $client->getResponse()->getStatusCode(), $client->getResponse()->getContent());
 
@@ -38,7 +38,7 @@ final class ThrottleRequestTest extends WebTestCase
         $this->assertSame(2, (int) $client->getResponse()->headers->get('x-ratelimit-remaining'));
         $this->assertEqualsWithDelta(10, (int) $client->getResponse()->headers->get('x-ratelimit-reset'), 2);
 
-        $client->request('POST', '/throttle');
+        $client->request('POST', '/throttle', [], [], ['HTTP_throttling-id' => 1]);
 
         $this->assertSame(200, $client->getResponse()->getStatusCode(), $client->getResponse()->getContent());
 
@@ -46,7 +46,7 @@ final class ThrottleRequestTest extends WebTestCase
         $this->assertSame(1, (int) $client->getResponse()->headers->get('x-ratelimit-remaining'));
         $this->assertEqualsWithDelta(10, (int) $client->getResponse()->headers->get('x-ratelimit-reset'), 2);
 
-        $client->request('POST', '/throttle');
+        $client->request('POST', '/throttle', [], [], ['HTTP_throttling-id' => 1]);
 
         $this->assertSame(200, $client->getResponse()->getStatusCode(), $client->getResponse()->getContent());
 
@@ -54,7 +54,7 @@ final class ThrottleRequestTest extends WebTestCase
         $this->assertSame(0, (int) $client->getResponse()->headers->get('x-ratelimit-remaining'));
         $this->assertEqualsWithDelta(10, (int) $client->getResponse()->headers->get('x-ratelimit-reset'), 2);
 
-        $client->request('POST', '/throttle');
+        $client->request('POST', '/throttle', [], [], ['HTTP_throttling-id' => 1]);
 
         $this->assertSame(429, $client->getResponse()->getStatusCode(), $client->getResponse()->getContent());
         $this->assertSame('Rate limit exceeded', $client->getResponse()->getContent());
