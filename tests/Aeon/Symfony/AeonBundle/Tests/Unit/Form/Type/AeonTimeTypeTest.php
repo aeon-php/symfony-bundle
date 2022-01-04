@@ -23,7 +23,7 @@ final class AeonTimeTypeTest extends TypeTestCase
 
         $dateTime = Time::fromString('13:00');
 
-        $this->assertObjectEquals($dateTime, $form->getData(), "isEqual");
+        $this->assertObjectEquals($dateTime, $form->getData(), 'isEqual');
     }
 
     public function test_submit_single_text_widget_input_datetime() : void
