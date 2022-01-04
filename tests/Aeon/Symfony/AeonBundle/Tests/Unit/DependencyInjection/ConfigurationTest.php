@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Aeon\Symfony\AeonBundle\Tests\Unit\DependencyInjection;
 
 use Aeon\Calendar\Holidays\GoogleRegionalHolidaysFactory;
+use Aeon\Calendar\Holidays\YasumiHolidaysFactory;
 use Aeon\Symfony\AeonBundle\DependencyInjection\Configuration;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
@@ -23,6 +24,17 @@ final class ConfigurationTest extends TestCase
         $this->assertEquals('H:i:s', $config['ui_time_format']);
         $this->assertSame([], $config['rate_limiter']);
         $this->assertEquals(GoogleRegionalHolidaysFactory::class, $config['calendar_holidays_factory_service']);
+    }
+
+    public function test_configuration_with_yasumi_holidays_provider() : void
+    {
+        $config = $this->process([
+            'aeon' => [
+                'calendar_holidays_factory_service' => 'calendar.holidays.factory.yasumi'
+            ],
+        ]);
+
+        $this->assertEquals('calendar.holidays.factory.yasumi', $config['calendar_holidays_factory_service']);
     }
 
     public function test_changed_configuration() : void
