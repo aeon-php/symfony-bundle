@@ -8,6 +8,7 @@ use Aeon\Symfony\AeonBundle\Form\DataTransformer\AeonDateTimeToDateTimeTransform
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\ReversedTransformer;
 
 final class AeonDateTimeType extends AbstractType
 {
@@ -31,6 +32,7 @@ final class AeonDateTimeType extends AbstractType
     {
         parent::buildForm($builder, $options);
 
+        $builder->resetModelTransformers();
         $builder->addModelTransformer(new AeonDateTimeToDateTimeTransformer());
     }
 }
