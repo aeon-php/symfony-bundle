@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Aeon\Symfony\AeonBundle\Tests\Unit\DependencyInjection;
 
 use Aeon\Calendar\Holidays\GoogleRegionalHolidaysFactory;
-use Aeon\Calendar\Holidays\YasumiHolidaysFactory;
 use Aeon\Symfony\AeonBundle\DependencyInjection\Configuration;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
@@ -30,7 +29,7 @@ final class ConfigurationTest extends TestCase
     {
         $config = $this->process([
             'aeon' => [
-                'calendar_holidays_factory_service' => 'calendar.holidays.factory.yasumi'
+                'calendar_holidays_factory_service' => 'calendar.holidays.factory.yasumi',
             ],
         ]);
 

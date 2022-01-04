@@ -74,7 +74,7 @@ final class AeonExtensionTest extends TestCase
         $extension->load(
             [
                 [
-                    'calendar_holidays_factory_service' => 'calendar.holidays.factory.yasumi'
+                    'calendar_holidays_factory_service' => 'calendar.holidays.factory.yasumi',
                 ],
             ],
             $this->container
