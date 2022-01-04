@@ -31,7 +31,7 @@ final class AeonDateTimeTypeTest extends TypeTestCase
         $form = $this->factory->create(self::TESTED_TYPE, null, [
             'widget' => 'single_text',
             'input' => 'string',
-            'data' => '2010-01-01 00:00:00'
+            'data' => '2010-01-01 00:00:00',
         ]);
 
         $form->submit('2010-06-02 03:04:00 UTC');
