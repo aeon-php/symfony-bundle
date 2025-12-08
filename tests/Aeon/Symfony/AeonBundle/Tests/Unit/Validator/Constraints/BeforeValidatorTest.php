@@ -13,7 +13,7 @@ use Symfony\Component\Validator\ConstraintValidator;
 
 final class BeforeValidatorTest extends AbstractComparisonValidatorTestCase
 {
-    public function provideValidComparisons() : \Generator
+    public static function provideValidComparisons() : \Generator
     {
         yield [DateTime::fromString('2001/01/01'), DateTime::fromString('2005/01/01')];
         yield [DateTime::fromString('2001/01/01'), DateTime::fromString('2005/01/01')];
@@ -24,7 +24,7 @@ final class BeforeValidatorTest extends AbstractComparisonValidatorTestCase
         yield [Day::fromString('2001/01/01 UTC'), Day::fromString('2005/01/01 UTC')];
     }
 
-    public function provideInvalidComparisons() : \Generator
+    public static function provideInvalidComparisons() : \Generator
     {
         yield [DateTime::fromString('2010/01/01'), '2010-01-01T00:00:00+00:00', DateTime::fromString('2005/01/01'), '2005-01-01T00:00:00+00:00', DateTime::class];
         yield [DateTime::fromString('2000/01/01'), '2000-01-01T00:00:00+00:00', DateTime::fromString('2000/01/01'), '2000-01-01T00:00:00+00:00', DateTime::class];
@@ -36,9 +36,9 @@ final class BeforeValidatorTest extends AbstractComparisonValidatorTestCase
         return new BeforeValidator();
     }
 
-    protected function createConstraint(array $options = null) : Constraint
+    protected function createConstraint(mixed $value) : Constraint
     {
-        return new Before($options);
+        return new Before(value: $value);
     }
 
     protected function getErrorCode() : ?string
